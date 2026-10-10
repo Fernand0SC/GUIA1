@@ -1,6 +1,7 @@
 package com.example.guia1.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.guia1.model.UsuarioErrores
 import com.example.guia1.model.UsuarioUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,41 @@ class UsuarioViewModel : ViewModel() {
 
     //actualiza el campo correo
     fun onCorreoChange(valor: String){
-        _estado.update { it.copy() }
+        _estado.update { it.copy(correo = valor, errores = it.errores.copy(correo = null)) }
+    }
+
+    //actualiza el campo clave
+    fun onClaveChange(valor: String){
+        _estado.update { it.copy(clave = valor, errores = it.errores.copy(clave = null)) }
+    }
+
+    //actualiza el campo direccion
+    fun onDireccionChange(valor: String){
+        _estado.update { it.copy(direccion = valor, errores = it.errores.copy(direccion = null)) }
+    }
+
+    //actualiza el campo de aceptacion
+    fun onAceptarTerminosChange(valor: Boolean){
+        _estado.update { it.copy(aceptaTerminos = valor) }
+    }
+
+    fun validarFormulario(): Boolean{
+        val estadoActual = _estado.value
+        val errores = UsuarioErrores(
+            nombre = if(estadoActual.nombre.isBlank()) "Campo obligatorio" else null,
+            correo = if(!estadoActual.correo.contains(other = "@")) "Correo invalido" else null,
+            clave = if(estadoActual.clave.length<6) "Debe tener al menos 6 caracteres" else null,
+            direccion = if(estadoActual.direccion.isBlank()) "Campo obligatorio" else null
+        )
+        val hayErrores = listOfNotNull(
+            errores.nombre,
+            errores.correo,
+            errores.clave,
+            errores.direccion
+        ).isNotEmpty()
+
+        _estado.update { it.copy(errores = errores) }
+
+        return !hayErrores
     }
 }
